@@ -12,7 +12,7 @@ class DigitClass:
         self.num_samples = 0
 
 def get_class_list():
-    idx_file = open('indices/2.csv', 'r')
+    idx_file = open('data/2.csv', 'r')
     idx_reader = csv.reader(idx_file)
     class_list = [DigitClass(digit) for digit in range(10)] # class_list[0..9]
     
