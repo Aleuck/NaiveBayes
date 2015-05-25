@@ -12,9 +12,9 @@ import numpy
 class DigitClass:
     def __init__(self, digit):
         self.digit = digit
-        self.pixels = [[] for i in range(256)]    # pixels[0..255][sample]
-        self.means = [-1 for i in range(256)]     # means[0..255]
-        self.variances = [-1 for i in range(256)] # variances[0..255]
+        self.pixels = [[] for i in range(256)]     # pixels[0..255][sample]
+        self.means = [-1 for i in range(256)]      # means[0..255]
+        self.deviations = [-1 for i in range(256)] # deviations[0..255]
         self.num_samples = 0
     
     def get_similarity(self, pixels):
@@ -22,7 +22,7 @@ class DigitClass:
         logpdf_sum = 0
         
         for i in range(256):
-            logpdf_sum += stats.norm.logpdf(pixels[i], loc=self.means[i], scale=self.variances[i])
+            logpdf_sum += stats.norm.logpdf(pixels[i], loc=self.means[i], scale=self.deviations[i])
         
         return logpdf_sum
 
@@ -56,7 +56,7 @@ def get_class_list():
     for digit_class in class_list:
         for i in range(256):
             digit_class.means[i] = numpy.mean(digit_class.pixels[i])
-            digit_class.variances[i] = numpy.var(digit_class.pixels[i])
+            digit_class.deviations[i] = numpy.std(digit_class.pixels[i])
     
     return class_list
 
