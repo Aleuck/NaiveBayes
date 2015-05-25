@@ -18,12 +18,13 @@ class DigitClass:
         self.num_samples = 0
     
     def get_similarity(self, pixels):
-        logpdfs = []
+        
+        logpdf_sum = 0
         
         for i in range(256):
-            logpdfs.append(stats.norm.logpdf(pixels[i], loc=self.means[i], scale=self.variances[i]))
+            logpdf_sum += stats.norm.logpdf(pixels[i], loc=self.means[i], scale=self.variances[i])
         
-        return numpy.sum(logpdfs)
+        return logpdf_sum
 
 
 
@@ -69,17 +70,17 @@ def get_sample_pixels(class_list, class_index, sample_index):
     
 def get_most_likely_digit(class_list, sample_pixels):
     
-    similarity_digit = []
-    similarity_value = []
+    most_likely_digit = 0
+    max_similarity_value = -float("inf")
     
     for digit_class in class_list:
         
-        similarity_digit.append(digit_class.digit)
-        similarity_value.append(digit_class.get_similarity(sample_pixels))
+        similarity_value = digit_class.get_similarity(sample_pixels)
+        if (similarity_value > max_similarity_value):
+            most_likely_digit = digit_class.digit
+            max_similarity_value = similarity_value
     
-    # Sort digits by similarity value
-    sorted_digits = sorted(similarity_digit, key=lambda i: similarity_value[i], reverse=True)
-    return sorted_digits[0]
+    return most_likely_digit
     
 
 
