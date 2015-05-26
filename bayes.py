@@ -92,17 +92,26 @@ class_list = get_class_list()
 #for digit_class in class_list:
 #    print(str(digit_class.digit) + ": " + str(numpy.mean(digit_class.means)))
 
-samples_per_class = 20 # Change for faster/slower tests
+samples_per_class = 2 # Change for faster/slower tests
 
+guesses = numpy.zeros((10,10), dtype=numpy.int32)
 for class_index in range(10):
     right_guesses = 0
-    
     for sample_index in range(samples_per_class):
         
         sample_pixels = get_sample_pixels(class_list, class_index, sample_index)
         most_likely_digit = get_most_likely_digit(class_list, sample_pixels)
         
+        guesses[class_index, most_likely_digit] += 1
         if (most_likely_digit == class_index):
             right_guesses += 1
     
     print(str(class_index) + ": " + str(right_guesses) + "/" + str(samples_per_class))
+print("    |  0  1  2  3  4  5  6  7  8  9 |")
+print("----|-------------------------------|")
+for digit in range(10):
+    string = " %2d | " % digit
+    for guess in guesses[digit,:]:
+        string += "%2d " % guess
+    string += "|"
+    print(string)
