@@ -92,7 +92,7 @@ class_list = get_class_list()
 #for digit_class in class_list:
 #    print(str(digit_class.digit) + ": " + str(numpy.mean(digit_class.means)))
 
-samples_per_class = 2 # Change for faster/slower tests
+samples_per_class = 5 # Change for faster/slower tests
 
 guesses = numpy.zeros((10,10), dtype=numpy.int32)
 for class_index in range(10):
@@ -107,11 +107,15 @@ for class_index in range(10):
             right_guesses += 1
     
     print(str(class_index) + ": " + str(right_guesses) + "/" + str(samples_per_class))
-print("    |  0  1  2  3  4  5  6  7  8  9 |")
+print("    |  0  1  2  3  4  5  6  7  8  9 | precision    recall  fmeasure")
+
 print("----|-------------------------------|")
 for digit in range(10):
+    precision = float(guesses[digit,digit]) / float(numpy.sum(guesses[digit,:]))
+    recall = float(guesses[digit,digit]) / float(numpy.sum(guesses[:,digit]))
+    fmeasure = 0.0
     string = " %2d | " % digit
     for guess in guesses[digit,:]:
         string += "%2d " % guess
-    string += "|"
+    string += "| %1.7f %1.7f %1.7f" % (precision, recall, fmeasure)
     print(string)
