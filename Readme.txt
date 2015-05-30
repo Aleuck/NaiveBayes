@@ -1,7 +1,7 @@
-*** sobre o arquivo usps.csv ***
-O arquivo data/usps.csv contÃ©m o dataset USPS completo com 9298 linhas/amostras e 256 colunas/pixels mais 1 coluna com o rotulo de classe.
-Os rÃ³tulos de classe (Ãºltima coluna) em usps.csv assumem valores de 0 a 9.
+A execução é feita através do comando:
 
-*** sobre os arquivos no diretorio indices ***
-Cada arquivo no diretorio indices estÃ¡ destinado a um aluno (especificado pelo professor). Cada linha desse arquivo se refere a um indice/linha do arquivo usps.csv. Os indices (5000 no total) devem ser utilizados pelo aluno para montar seu proprio subconjunto de dados para treinamento e avaliacao na tarefa de classificacao de digitos usando o Naive Bayes.
+python bayes.py
 
+Python 3 deve estar instalado, bem como as bibliotecas numpy e scipy específicas para essa versão.
+
+Os arquivos "2.csv" e "usps.csv" devem estar presentes na pasta "data", conforme inclusos.
