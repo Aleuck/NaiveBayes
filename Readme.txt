@@ -1,6 +1,6 @@
 A execução é feita através do comando:
 
-python bayes.py
+python3 bayes.py
 
 Python 3 deve estar instalado, bem como as bibliotecas numpy e scipy específicas para essa versão.
 
