@@ -12,7 +12,7 @@ import numpy
 class DigitClass:
     def __init__(self, digit):
         self.digit = digit
-        self.pixels = [[] for i in range(256)]     # pixels[0..255][sample]
+        self.samples = []                          # samples[sample][0..255]
         self.means = [-1 for i in range(256)]      # means[0..255]
         self.deviations = [-1 for i in range(256)] # deviations[0..255]
         self.num_samples = 0
@@ -48,25 +48,31 @@ def get_class_list():
         digit_class = class_list[int(usps_line.pop())]
         digit_class.num_samples += 1
         
-        # add each pixel value
-        for i in range(256):
-            digit_class.pixels[i].append(float(usps_line[i]))
+        # store all samples
+        digit_class.samples.append([float(i) for i in usps_line])
         
-    # For each class, calculate each pixel's mean and variance across samples
-    for digit_class in class_list:
-        for i in range(256):
-            digit_class.means[i] = numpy.mean(digit_class.pixels[i])
-            digit_class.deviations[i] = numpy.std(digit_class.pixels[i])
-    
     return class_list
-
-def get_sample_pixels(class_list, class_index, sample_index):
-    sample_pixels = []
     
-    for i in range(256):
-        sample_pixels.append(class_list[class_index].pixels[i][sample_index])
+def calculate_class_list_statistics(class_list, first_excluded_sample_id = -1, last_excluded_sample_id = -1):
     
-    return sample_pixels
+    for digit_class in class_list:
+        selected_samples = []
+        pixels = [[] for i in range(256)] # pixels[0..255][sample]
+        
+        # Filter selected samples (don't include excluded samples)
+        for sample_id in range(digit_class.num_samples):
+            if sample_id < first_excluded_sample_id or sample_id > last_excluded_sample_id:
+                selected_samples.append(digit_class.samples[sample_id])
+        
+        # For each sample, add each of its 256 pixels to each element of pixels[0..255]
+        for sample in selected_samples:
+            for p in range(256):
+                pixels[p].append(sample[p])
+        
+        # Calculate mean and variance for each pixel across samples
+        for p in range(256):
+            digit_class.means[p] = numpy.mean(pixels[p])
+            digit_class.deviations[p] = numpy.std(pixels[p])
     
 def get_most_likely_digit(class_list, sample_pixels):
     
@@ -81,7 +87,46 @@ def get_most_likely_digit(class_list, sample_pixels):
             max_similarity_value = similarity_value
     
     return most_likely_digit
+
+def get_confusion_matrix(class_list, first_test_sample_id, last_test_sample_id):
     
+    # Calculate confusion matrix
+    guesses = numpy.zeros((10,10), dtype=numpy.int32)
+    for class_index in range(10):
+        right_guesses = 0
+        for sample_index in range(first_test_sample_id, last_test_sample_id + 1):
+            
+            digit_class = class_list[class_index]
+            sample_pixels = digit_class.samples[sample_index]
+            most_likely_digit = get_most_likely_digit(class_list, sample_pixels)
+            
+            guesses[class_index, most_likely_digit] += 1 # Add guess to confusion matrix
+            if (most_likely_digit == class_index):
+                right_guesses += 1
+        
+        print(str(class_index) + ": " + str(right_guesses) + "/" + str((last_test_sample_id-first_test_sample_id)+1))
+    
+    return guesses
+
+def print_results(guesses):
+    # Print confusion matrix
+    print("    |  0  1  2  3  4  5  6  7  8  9 | precision recall    fmeasure")
+    print("----|-------------------------------|")
+    for digit in range(10):
+        right_guesses = guesses[digit,digit]
+        total_guesses = numpy.sum(guesses[digit,:])
+        total_occurrences = numpy.sum(guesses[:,digit])
+        
+        precision = float(right_guesses) / float(total_guesses)
+        recall = float(right_guesses) / float(total_occurrences)
+        fmeasure = 2.0 * (precision * recall) / (precision + recall)
+        
+        string = " %2d | " % digit
+        for guess in guesses[digit,:]:
+            string += "%2d " % guess
+        string += "| %1.7f %1.7f %1.7f" % (precision, recall, fmeasure)
+        print(string)
+
 
 
 ##################################################
@@ -89,39 +134,13 @@ def get_most_likely_digit(class_list, sample_pixels):
 ##################################################
 
 class_list = get_class_list()
-#for digit_class in class_list:
-#    print(str(digit_class.digit) + ": " + str(numpy.mean(digit_class.means)))
 
-samples_per_class = 5 # Change for faster/slower tests
-
-guesses = numpy.zeros((10,10), dtype=numpy.int32)
-for class_index in range(10):
-    right_guesses = 0
-    for sample_index in range(samples_per_class):
-        
-        sample_pixels = get_sample_pixels(class_list, class_index, sample_index)
-        most_likely_digit = get_most_likely_digit(class_list, sample_pixels)
-        
-        guesses[class_index, most_likely_digit] += 1
-        if (most_likely_digit == class_index):
-            right_guesses += 1
+for partition in range(10):
+    partition_size = 50
+    first_partition_sample_id = partition_size*(partition)
+    last_partition_sample_id  = partition_size*(partition+1) - 1
     
-    print(str(class_index) + ": " + str(right_guesses) + "/" + str(samples_per_class))
-
-print("    |  0  1  2  3  4  5  6  7  8  9 | precision recall    fmeasure")
-print("----|-------------------------------|")
-
-for digit in range(10):
-    right_guesses = guesses[digit,digit]
-    total_guesses = numpy.sum(guesses[digit,:])
-    total_occurrences = numpy.sum(guesses[:,digit])
-    
-    precision = float(right_guesses) / float(total_guesses)
-    recall = float(right_guesses) / float(total_occurrences)
-    fmeasure = 2.0 * (precision * recall) / (precision + recall)
-    
-    string = " %2d | " % digit
-    for guess in guesses[digit,:]:
-        string += "%2d " % guess
-    string += "| %1.7f %1.7f %1.7f" % (precision, recall, fmeasure)
-    print(string)
+    print("Testando amostras de %d a %d, treinando com amostras restantes:" % (first_partition_sample_id, last_partition_sample_id))
+    calculate_class_list_statistics(class_list, first_partition_sample_id, last_partition_sample_id) # Excludes partition's samples from training
+    guesses = get_confusion_matrix( class_list, first_partition_sample_id, last_partition_sample_id) # Test with partition's samples
+    print_results(guesses)
