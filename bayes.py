@@ -107,13 +107,19 @@ for class_index in range(10):
             right_guesses += 1
     
     print(str(class_index) + ": " + str(right_guesses) + "/" + str(samples_per_class))
-print("    |  0  1  2  3  4  5  6  7  8  9 | precision    recall  fmeasure")
 
+print("    |  0  1  2  3  4  5  6  7  8  9 | precision recall    fmeasure")
 print("----|-------------------------------|")
+
 for digit in range(10):
-    precision = float(guesses[digit,digit]) / float(numpy.sum(guesses[digit,:]))
-    recall = float(guesses[digit,digit]) / float(numpy.sum(guesses[:,digit]))
-    fmeasure = 0.0
+    right_guesses = guesses[digit,digit]
+    total_guesses = numpy.sum(guesses[digit,:])
+    total_occurrences = numpy.sum(guesses[:,digit])
+    
+    precision = float(right_guesses) / float(total_guesses)
+    recall = float(right_guesses) / float(total_occurrences)
+    fmeasure = 2.0 * (precision * recall) / (precision + recall)
+    
     string = " %2d | " % digit
     for guess in guesses[digit,:]:
         string += "%2d " % guess
