@@ -110,8 +110,8 @@ def get_confusion_matrix(class_list, first_test_sample_id, last_test_sample_id):
 
 def print_results(guesses):
     # Print confusion matrix
-    print("    |  0  1  2  3  4  5  6  7  8  9 | precision recall    fmeasure")
-    print("----|-------------------------------|")
+    print("    |    0    1    2    3    4    5    6    7    8    9 | precision recall    fmeasure")
+    print("----|---------------------------------------------------|")
     for digit in range(10):
         right_guesses = guesses[digit,digit]
         total_guesses = numpy.sum(guesses[digit,:])
@@ -123,7 +123,7 @@ def print_results(guesses):
         
         string = " %2d | " % digit
         for guess in guesses[digit,:]:
-            string += "%2d " % guess
+            string += "%4.1f " % guess
         string += "| %1.7f %1.7f %1.7f" % (precision, recall, fmeasure)
         print(string)
 
@@ -134,7 +134,7 @@ def print_results(guesses):
 ##################################################
 
 class_list = get_class_list()
-
+confusion_matrixes = numpy.zeros((10,10,10));
 for partition in range(10):
     partition_size = 50
     first_partition_sample_id = partition_size*(partition)
@@ -143,4 +143,8 @@ for partition in range(10):
     print("Testando amostras de %d a %d, treinando com amostras restantes:" % (first_partition_sample_id, last_partition_sample_id))
     calculate_class_list_statistics(class_list, first_partition_sample_id, last_partition_sample_id) # Excludes partition's samples from training
     guesses = get_confusion_matrix( class_list, first_partition_sample_id, last_partition_sample_id) # Test with partition's samples
+    confusion_matrixes[partition,:,:] = guesses;
     print_results(guesses)
+mean_confusion_matrix = numpy.mean(confusion_matrixes, axis=0)
+print ("Matriz de confusão média:")
+print_results(mean_confusion_matrix);
