@@ -114,8 +114,8 @@ def print_results(guesses):
     print("----|---------------------------------------------------|")
     for digit in range(10):
         right_guesses = guesses[digit,digit]
-        total_guesses = numpy.sum(guesses[digit,:])
-        total_occurrences = numpy.sum(guesses[:,digit])
+        total_guesses = numpy.sum(guesses[:,digit])
+        total_occurrences = numpy.sum(guesses[digit,:])
         
         precision = float(right_guesses) / float(total_guesses)
         recall = float(right_guesses) / float(total_occurrences)
@@ -134,7 +134,7 @@ def print_results(guesses):
 ##################################################
 
 class_list = get_class_list()
-confusion_matrixes = numpy.zeros((10,10,10));
+confusion_matrices = numpy.zeros((10,10,10));
 for partition in range(10):
     partition_size = 50
     first_partition_sample_id = partition_size*(partition)
@@ -143,8 +143,9 @@ for partition in range(10):
     print("Testando amostras de %d a %d, treinando com amostras restantes:" % (first_partition_sample_id, last_partition_sample_id))
     calculate_class_list_statistics(class_list, first_partition_sample_id, last_partition_sample_id) # Excludes partition's samples from training
     guesses = get_confusion_matrix( class_list, first_partition_sample_id, last_partition_sample_id) # Test with partition's samples
-    confusion_matrixes[partition,:,:] = guesses;
+    confusion_matrices[partition,:,:] = guesses
     print_results(guesses)
-mean_confusion_matrix = numpy.mean(confusion_matrixes, axis=0)
+    
+mean_confusion_matrix = numpy.mean(confusion_matrices, axis=0)
 print ("Matriz de confusão média:")
-print_results(mean_confusion_matrix);
+print_results(mean_confusion_matrix)
